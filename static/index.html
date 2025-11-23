@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tado API - Activation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ffc107;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.success {
+            background: #28a745;
+            animation: none;
+        }
+
+        .status-dot.error {
+            background: #dc3545;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .info-text {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .url-box {
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 14px;
+            color: #333;
+            display: none;
+        }
+
+        .url-box.show {
+            display: block;
+        }
+
+        .url-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .url-link:hover {
+            text-decoration: underline;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .zone-count {
+            background: #e7f3ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .zone-count strong {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        .api-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .api-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .api-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Tado API</h1>
+        <p class="subtitle">Activate your device to start using the API</p>
+
+        <!-- Step 1: Initial Status Check -->
+        <div id="step1" class="step active">
+            <div class="status-card">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot1"></div>
+                    <span class="status-text" id="statusText1">Checking activation status...</span>
+                </div>
+                <p class="info-text" id="infoText1">Please wait while we check if your device is already activated.</p>
+            </div>
+            <button id="startBtn" onclick="startActivation()" disabled>
+                <span class="spinner"></span>Loading...
+            </button>
+            <button id="resetBtn" onclick="resetActivation()">
+                Reset
+            </button>
+        </div>
+
+        <!-- Step 2: Activation URL -->
+        <div id="step2" class="step">
+            <div class="status-card">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span class="status-text">Activation Required</span>
+                </div>
+                <p class="info-text">Click the link below to authenticate with Tado. After completing authentication in your browser, return here and click "Check Activation Status".</p>
+            </div>
+
+            <div class="url-box show" id="urlBox">
+                <a id="activationUrl" href="#" target="_blank" class="url-link">Click here to authenticate</a>
+            </div>
+
+            <button onclick="checkActivation()">Check Activation Status</button>
+        </div>
+
+        <!-- Step 3: Checking Activation -->
+        <div id="step3" class="step">
+            <div class="status-card">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span class="status-text">Checking activation...</span>
+                </div>
+                <p class="info-text">Verifying your authentication. This may take a few moments.</p>
+            </div>
+            <button disabled>
+                <span class="spinner"></span>Checking...
+            </button>
+        </div>
+
+        <!-- Step 4: Success -->
+        <div id="step4" class="step">
+            <div class="success-icon">✅</div>
+            <div class="status-card">
+                <div class="status-indicator">
+                    <div class="status-dot success"></div>
+                    <span class="status-text">Activation Complete!</span>
+                </div>
+                <p class="info-text">Your device is now activated and ready to use.</p>
+                <div class="zone-count" id="zoneCount"></div>
+            </div>
+            <div class="api-link">
+                <a href="/docs" target="_blank">View API Documentation</a> |
+                <a href="/zones" target="_blank">Get Zone Data</a>
+            </div>
+        </div>
+
+        <!-- Step 5: Error -->
+        <div id="step5" class="step">
+            <div class="status-card">
+                <div class="status-indicator">
+                    <div class="status-dot error"></div>
+                    <span class="status-text">Activation Not Complete</span>
+                </div>
+                <p class="info-text" id="errorText">Please make sure you completed the authentication in your browser, then try again.</p>
+            </div>
+            <button onclick="showStep('step2')">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        let activationUrl = '';
+
+        function showStep(stepId) {
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+            document.getElementById(stepId).classList.add('active');
+        }
+
+        async function checkInitialStatus() {
+            try {
+                const response = await fetch('/activation/status');
+                const data = await response.json();
+
+                const statusDot = document.getElementById('statusDot1');
+                const statusText = document.getElementById('statusText1');
+                const infoText = document.getElementById('infoText1');
+                const startBtn = document.getElementById('startBtn');
+
+                if (data.status === 'completed') {
+                    statusDot.classList.add('success');
+                    statusText.textContent = 'Already Activated!';
+                    infoText.textContent = `Your device is already activated with ${data.zone_count} zone(s) configured.`;
+                    startBtn.textContent = 'View API Documentation';
+                    startBtn.disabled = false;
+                    startBtn.onclick = () => window.location.href = '/docs';
+                } else {
+                    statusDot.style.background = '#ffc107';
+                    statusText.textContent = 'Not Activated';
+                    infoText.textContent = 'Click the button below to start the activation process.';
+                    startBtn.textContent = 'Start Activation';
+                    startBtn.disabled = false;
+                    startBtn.onclick = startActivation;
+                }
+            } catch (error) {
+                const statusDot = document.getElementById('statusDot1');
+                const statusText = document.getElementById('statusText1');
+                const infoText = document.getElementById('infoText1');
+                const startBtn = document.getElementById('startBtn');
+
+                statusDot.classList.add('error');
+                statusText.textContent = 'Error';
+                infoText.textContent = 'Unable to check status. Please try again.';
+                startBtn.textContent = 'Retry';
+                startBtn.disabled = false;
+                startBtn.onclick = () => location.reload();
+            }
+        }
+
+        async function startActivation() {
+            showStep('step3');
+
+            try {
+                const response = await fetch('/activation/start', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.url) {
+                    activationUrl = data.url;
+                    document.getElementById('activationUrl').href = activationUrl;
+                    document.getElementById('activationUrl').textContent = activationUrl;
+                    showStep('step2');
+                } else if (data.status === 'completed') {
+                    showSuccess(data.zone_count);
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                showError('Failed to start activation. Please try again.');
+            }
+        }
+
+        async function resetActivation() {
+            try {
+                const response = await fetch('/activation/reset', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.status === 'reset') {
+                    showStep('step1');
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                showError('Failed to start activation. Please try again.');
+            }
+        }
+
+        async function checkActivation() {
+            showStep('step3');
+
+            try {
+                const response = await fetch('/activation/complete', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.status === 'completed') {
+                    showSuccess(data.zone_count);
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                showError('Failed to check activation status. Please try again.');
+            }
+        }
+
+        function showSuccess(zoneCount) {
+            document.getElementById('zoneCount').innerHTML = `Found <strong>${zoneCount}</strong> zone(s)`;
+            showStep('step4');
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            showStep('step5');
+        }
+
+        // Check initial status on page load
+        checkInitialStatus();
+    </script>
+</body>
+</html>

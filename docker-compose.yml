@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  tado-api:
+    build: .
+    container_name: tado-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount the data directory to persist the refresh token
+      - ./data:/app/data
+    environment:
+      - TADO_TOKEN_PATH=/app/data/refresh_token
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; r = requests.get('http://localhost:8000/health'); exit(0 if r.status_code == 200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
